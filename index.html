@@ -225,6 +225,7 @@
                                 <th class="p-2">Máy/Vị Trí</th>
                                 <th class="p-2">SL</th>
                                 <th class="p-2">Ống</th>
+                                <th class="p-2 text-center w-8">Sửa</th>
                                 <th class="p-2 text-center w-8">Xóa</th>
                             </tr>
                         </thead>
@@ -766,6 +767,7 @@
 
         let editingSheetId = null;
         let editingSheetItems = [];
+        let editingMaterialSAP = null;
 
         function getAutoWorkshopPassword(workshopName) {
             if (!workshopName) return 'Admin2026';
@@ -2385,12 +2387,33 @@
                         <td class="p-2 font-semibold text-slate-800 truncate max-w-[120px]" title="${m.name}">${m.name}</td>
                         <td class="p-2"><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 border">${m.category}</span></td>
                         <td class="p-2 text-center">
+                            <button onclick="editMaterialMaster('${m.sapCode}')" class="text-amber-500 hover:text-amber-700 p-1"><i data-lucide="pencil" class="w-4 h-4"></i></button>
+                        </td>
+                        <td class="p-2 text-center">
                             ${canDelete ? `<button onclick="deleteMaterialMaster('${m.sapCode}')" class="text-red-500 hover:text-red-700 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : `<span class="text-slate-300">-</span>`}
                         </td>
                     </tr>
                 `;
             }).join('');
             lucide.createIcons();
+        }
+
+        function editMaterialMaster(sapCode) {
+            const mat = masterMaterials.find(m => m.sapCode.toString().trim() === sapCode.toString().trim());
+            if (!mat) return;
+            editingMaterialSAP = sapCode;
+            document.getElementById('modal-sap-input').value = mat.sapCode || '';
+            document.getElementById('modal-name-input').value = mat.name || '';
+            document.getElementById('modal-desc-input').value = mat.description || '';
+            document.getElementById('modal-alias-input').value = Array.isArray(mat.aliases) ? mat.aliases.join(', ') : '';
+            document.getElementById('modal-mat-workshop').value = mat.workshop || 'Phân Xưởng Cắt';
+            onModalMaterialWorkshopChange();
+            setTimeout(() => {
+                document.getElementById('modal-cat-input').value = mat.category || '';
+            }, 50);
+            document.querySelector('#add-material-modal h3').innerText = 'Chỉnh Sửa Mã SAP';
+            document.getElementById('add-material-modal').classList.remove('hidden');
+            document.getElementById('add-material-modal').classList.add('flex');
         }
 
         function openAddMaterialModal() {
@@ -2409,6 +2432,8 @@
         }
 
         function closeAddMaterialModal() {
+            editingMaterialSAP = null;
+            document.querySelector('#add-material-modal h3').innerText = 'Thêm Mã SAP';
             document.getElementById('add-material-modal').classList.add('hidden');
             document.getElementById('add-material-modal').classList.remove('flex');
         }
@@ -2433,6 +2458,23 @@
                 if (masterMaterials.some(m => m.sapCode.toString().trim() === sap)) {
                     showToast("Mã SAP này đã tồn tại!", "error");
                     return;
+                }
+
+                if (editingMaterialSAP) {
+                    const idx = masterMaterials.findIndex(m => m.sapCode.toString().trim() === editingMaterialSAP);
+                    if (idx !== -1) {
+                        let aliases = [name];
+                        if (aliasesRaw) aliases = aliases.concat(aliasesRaw.split(',').map(s => s.trim()).filter(Boolean));
+                        masterMaterials[idx] = {...masterMaterials[idx], sapCode: sap, workshop: ws, name, description: desc, category: cat, aliases};
+                        saveStorage('app_materials', masterMaterials);
+                        syncToFirebase('materials', masterMaterials);
+                        editingMaterialSAP = null;
+                        closeAddMaterialModal();
+                        renderAdminMaterialsTable();
+                        updateWorkshopScopedUI();
+                        showToast('Đã cập nhật mã SAP ' + sap + '!');
+                        return;
+                    }
                 }
 
                 let aliases = [name];
