@@ -63,11 +63,11 @@
 
     <!-- Thông Báo Toast -->
     <div id="toast" class="fixed top-3 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-3.5 py-2 rounded-xl shadow-2xl transition-all duration-300 transform -translate-y-20 opacity-0 pointer-events-none flex items-center space-x-2 z-50 text-xs font-semibold max-w-[92vw]">
-        <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+        <i id="toast-icon" data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400 shrink-0"></i>
         <span id="toast-msg" class="truncate">Thao tác thành công</span>
     </div>
 
-    <!-- Thanh Topbar Gọn Gàng -->
+    <!-- Thanh Topbar -->
     <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40 w-full max-w-full overflow-hidden border-b border-slate-800">
         <div class="max-w-5xl mx-auto px-2 sm:px-4 h-14 flex justify-between items-center w-full">
             
@@ -225,7 +225,6 @@
                                 <th class="p-2">Máy/Vị Trí</th>
                                 <th class="p-2">SL</th>
                                 <th class="p-2">Ống</th>
-                                <th class="p-2 text-center w-8">Sửa</th>
                                 <th class="p-2 text-center w-8">Xóa</th>
                             </tr>
                         </thead>
@@ -246,11 +245,10 @@
             </div>
         </section>
 
-        <!-- TAB 2: NHẬT KÝ KIỂM KÊ (BẢO MẬT & PHÂN QUYỀN TRUY CẬP) -->
+        <!-- TAB 2: NHẬT KÝ KIỂM KÊ -->
         <section id="history-tab" class="hidden space-y-3.5 w-full max-w-full">
             <div class="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-slate-200 space-y-2.5 w-full max-w-full overflow-hidden">
                 
-                <!-- Khung Banner Báo Quyền Truy Cập Nhật Ký -->
                 <div id="history-permission-banner" class="bg-slate-800 text-slate-200 p-2.5 rounded-lg flex items-center justify-between text-xs">
                     <div class="flex items-center space-x-2 truncate">
                         <i data-lucide="lock" class="w-4 h-4 text-amber-400 shrink-0"></i>
@@ -279,7 +277,6 @@
                     </div>
                 </div>
 
-                <!-- Bộ lọc theo Ngày & Xưởng (Chỉ Admin Tổng mới được lọc xưởng khác) -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-semibold">
                     <div id="container-history-workshop-filter">
                         <label class="block text-slate-600 mb-1 font-bold">Phân Xưởng:</label>
@@ -346,7 +343,7 @@
                 </button>
             </div>
 
-            <!-- MỤC 1: CHỈ ADMIN TỔNG MỚI THẤY & QUẢN LÝ MẬT KHẨU CÁC PHÂN XƯỞNG -->
+            <!-- MỤC 1: Quản lý Phân Xưởng -->
             <div id="admin-workshop-section" class="hidden bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-slate-200 space-y-2.5 w-full max-w-full overflow-hidden">
                 <div class="flex justify-between items-center">
                     <div>
@@ -446,6 +443,7 @@
                                 <th class="p-2">Phân Xưởng</th>
                                 <th class="p-2">Tên Vật Tư</th>
                                 <th class="p-2">Danh Mục</th>
+                                <th class="p-2 text-center w-8">Sửa</th>
                                 <th class="p-2 text-center w-8">Xóa</th>
                             </tr>
                         </thead>
@@ -577,7 +575,7 @@
         </div>
     </div>
 
-    <!-- Modal Mật Khẩu Admin (1 Ô Duy Nhất) -->
+    <!-- Modal Mật Khẩu Admin -->
     <div id="admin-auth-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-3">
         <div class="bg-white rounded-xl shadow-xl w-full max-w-xs overflow-hidden">
             <div class="bg-slate-900 px-3.5 py-2.5 text-white flex justify-between items-center">
@@ -597,7 +595,7 @@
         </div>
     </div>
 
-    <!-- Modal Thêm Phân Xưởng (Chỉ Admin Tổng) -->
+    <!-- Modal Thêm Phân Xưởng -->
     <div id="add-workshop-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-3">
         <div class="bg-white rounded-xl shadow-xl w-full max-w-xs overflow-hidden">
             <div class="bg-blue-900 px-3.5 py-2.5 text-white flex justify-between items-center">
@@ -671,7 +669,7 @@
         </div>
     </div>
 
-    <!-- Modal Thêm Thủ Công Mã SAP -->
+    <!-- Modal Thêm / Chỉnh Sửa Mã SAP -->
     <div id="add-material-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-3">
         <div class="bg-white rounded-xl shadow-xl w-full max-w-xs overflow-hidden">
             <div class="bg-slate-900 px-3.5 py-2.5 text-white flex justify-between items-center">
@@ -743,7 +741,6 @@
             console.warn("Lỗi kết nối Firebase:", e);
         }
 
-        // CẤP MÃ ĐỊNH DANH THIẾT BỊ (DEVICE ID) ĐỂ BẢO VỆ DỮ LIỆU TỪNG MÁY
         function getOrCreateDeviceId() {
             let id = localStorage.getItem('app_device_id');
             if (!id) {
@@ -754,15 +751,13 @@
         }
         const currentDeviceId = getOrCreateDeviceId();
 
-        // BIẾN QUẢN LÝ PHÂN QUYỀN
         let isAdminAuthenticated = false;
-        let currentAdminRole = null; // 'SUPER_ADMIN' | 'WORKSHOP_ADMIN'
+        let currentAdminRole = null;
         let currentAdminWorkshop = null;
 
         let currentScannedMaterial = null;
         let pendingUnmappedQRText = "";
 
-        // DANH SÁCH VẬT TƯ ĐANG NHẬP TRÊN PHIẾU
         let currentSheetItems = [];
 
         let editingSheetId = null;
@@ -798,9 +793,7 @@
             { name: "Máy Cắt 4", workshop: "Phân Xưởng Cắt" }
         ];
 
-        // Dữ liệu mẫu ban đầu (chỉ nạp khi cơ sở dữ liệu hoàn toàn trống)
         const defaultMaterials = [
-            // NẸP LỚN
             { sapCode: "400009293", workshop: "Phân Xưởng Cắt", description: "TR-NL-50-GMM-TRA-0-XK", name: "Nẹp lớn ghép màng mờ", category: "NẸP LỚN", aliases: ["NL GHÉP MÀNG MỜ", "NL GMM TRA", "NL MỜ", "NEP LON GHEP MANG MO"] },
             { sapCode: "400009299", workshop: "Phân Xưởng Cắt", description: "TR-NL-50-GMB-CAM-1858C-XK", name: "Nẹp cam lớn 1585", category: "NẸP LỚN", aliases: ["NL CAM 1585", "NL CAM 1858C", "NEP CAM LON"] },
             { sapCode: "400009302", workshop: "Phân Xưởng Cắt", description: "TR-NL-50-GMB-XDU-293C-XK", name: "Nẹp xanh dương lớn 293", category: "NẸP LỚN", aliases: ["NL XANH DƯƠNG 293", "NL XDU 293", "NL XANH DUONG"] },
@@ -812,8 +805,6 @@
             { sapCode: "400009295", workshop: "Phân Xưởng Cắt", description: "TR-NL-50-GMB-DO-0-XK", name: "NẸP ĐỎ BÓNG LỚN", category: "NẸP LỚN", aliases: ["NL ĐỎ BÓNG", "NL DO BONG"] },
             { sapCode: "400009301", workshop: "Phân Xưởng Cắt", description: "TR-NL-50-GMM-XDU-314C-XK", name: "Nẹp lớn xanh 314", category: "NẸP LỚN", aliases: ["NL XANH 314"] },
             { sapCode: "400009292", workshop: "Phân Xưởng Cắt", description: "TR-NL-50-GMB-TRA-0-XK", name: "Nẹp lớn ghép màng bóng trắng", category: "NẸP LỚN", aliases: ["NL GMB TRA"] },
-
-            // NẸP NHỎ
             { sapCode: "400009042", workshop: "Phân Xưởng Cắt", description: "N12-6800-GMB-DEN", name: "Nẹp đen nhỏ", category: "NẸP NHỎ", aliases: ["NN ĐEN", "NN DEN"] },
             { sapCode: "400009037", workshop: "Phân Xưởng Cắt", description: "N12-6800-GMB-XDU-2154C", name: "Nẹp nhỏ xanh dương 2154", category: "NẸP NHỎ", aliases: ["NN XANH DƯƠNG 2154", "NN XDU 2154"] },
             { sapCode: "400009034", workshop: "Phân Xưởng Cắt", description: "N12-6800-GMM-XDU-314C", name: "Nẹp nhỏ xanh dương 314C", category: "NẸP NHỎ", aliases: ["NN XANH DƯƠNG 314C", "NN XANH DƯƠNG 314", "NN XDU 314", "NN XANH DƯƠNG", "NN XANH DUONG"] },
@@ -826,16 +817,10 @@
             { sapCode: "400071786", workshop: "Phân Xưởng Cắt", description: "N12-6800-GMB-XDU-CYAN", name: "Nẹp nhỏ CYAN", category: "NẸP NHỎ", aliases: ["NN CYAN", "NN XDU CYAN"] },
             { sapCode: "400071787", workshop: "Phân Xưởng Cắt", description: "N12-6800-TRB-TRA", name: "Nẹp nhỏ tráng 1 mặt", category: "NẸP NHỎ", aliases: ["NN TRÁNG 1 MẶT"] },
             { sapCode: "400009035", workshop: "Phân Xưởng Cắt", description: "N12-6800-GMB-DO", name: "Nẹp nhỏ đỏ C", category: "NẸP NHỎ", aliases: ["NN ĐỎ C", "NN DO C", "NN DO"] },
-
-            // DÂY ĐAI
             { sapCode: "200000023", workshop: "Phân Xưởng Cắt", description: "Dây đai đóng kiện Nhiệt chung bản 12ly", name: "Dây đai", category: "DÂY ĐAI", aliases: ["DÂY ĐAI", "DAY DAI"] },
-
-            // CHỈ MAY
             { sapCode: "110000009", workshop: "Phân Xưởng Cắt", description: "Chỉ may-cotton-8 sợi-7T 1XD-SO", name: "Chỉ coton 7 trắng 1 xanh", category: "CHỈ MAY", aliases: ["CHỈ COTON 7 TRẮNG 1 XANH"] },
             { sapCode: "110000010", workshop: "Phân Xưởng Cắt", description: "Chỉ may-cotton-8 sợi-Đỏ-SO", name: "Chỉ coton đỏ", category: "CHỈ MAY", aliases: ["CHỈ COTON ĐỎ"] },
             { sapCode: "40000955", workshop: "Phân Xưởng Cắt", description: "KS-C-0-900-D0", name: "Chỉ trắng 900D", category: "CHỈ MAY", aliases: ["CHỈ TRẮNG 900D"] },
-
-            // KEO DÁN LƯNG
             { sapCode: "100000055", workshop: "Phân Xưởng Cắt", description: "Hạt nhựa PP trắng", name: "Hạt nhựa PP trắng", category: "KEO DÁN LƯNG", aliases: ["HẠT NHỰA PP TRẮNG"] },
             { sapCode: "100000073", workshop: "Phân Xưởng Cắt", description: "Hạt nhựa LDPE trắng", name: "Hạt nhựa LDPE trắng", category: "KEO DÁN LƯNG", aliases: ["HẠT NHỰA LDPE TRẮNG"] }
         ];
@@ -863,7 +848,6 @@
         let rawMachines = loadStorageArray('app_machines', defaultMachines);
         let machines = rawMachines.map(m => typeof m === 'string' ? { name: m, workshop: "Phân Xưởng Cắt" } : { name: m.name, workshop: m.workshop || "Phân Xưởng Cắt" });
 
-        // Khởi tạo Master Data an toàn: Không tự động chèn lại mã đã bị người dùng xóa
         let rawMaterials = loadStorageArray('app_materials', null);
         let masterMaterials = [];
         if (rawMaterials === null) {
@@ -1106,7 +1090,6 @@
                 }
             }, () => {});
 
-            // ĐỒNG BỘ MÃ SAP TỪ FIREBASE - ĐÃ XÓA VÒNG LẶP AUTO-RESTORE
             db.collection("settings").doc("materials").onSnapshot((doc) => {
                 if (doc.exists && doc.data() && Array.isArray(doc.data().list)) {
                     masterMaterials = doc.data().list.map(m => {
@@ -1218,7 +1201,6 @@
             updateWorkshopScopedUI();
         }
 
-        // BẢO MẬT & PHÂN QUYỀN TRANG QUẢN TRỊ ADMIN
         function applyWorkshopAdminRestrictions() {
             const roleBadge = document.getElementById('admin-role-badge');
             const workshopSection = document.getElementById('admin-workshop-section');
@@ -1283,7 +1265,6 @@
             }
         }
 
-        // CẬP NHẬT TRẠNG THÁI HIỂN THỊ CỦA TAB NHẬT KÝ THEO QUYỀN BẢO MẬT
         function updateHistoryUIState() {
             const bannerText = document.getElementById('history-permission-text');
             const loginTriggerBtn = document.getElementById('btn-history-login-trigger');
@@ -1684,7 +1665,7 @@
             const record = {
                 id: sheetId,
                 workshop: workshop,
-                deviceId: currentDeviceId, // Đính kèm ID thiết bị để bảo mật
+                deviceId: currentDeviceId,
                 date: date,
                 machine: primaryMachine,
                 createdBy: userName,
@@ -1728,7 +1709,6 @@
             showToast("Đã xóa bộ lọc!");
         }
 
-        // BẢO MẬT BỘ LỌC NHẬT KÝ THEO CẤP ĐỘ TRUY CẬP
         function getFilteredHistoryRecords() {
             if (!Array.isArray(historyRecords)) return [];
 
@@ -1736,20 +1716,15 @@
             const toDate = document.getElementById('history-to-date')?.value || "";
 
             return historyRecords.filter(r => {
-                // 1. Phân quyền dữ liệu:
                 if (!isAdminAuthenticated) {
-                    // Chưa đăng nhập Admin: Chỉ xem phiếu mà chính thiết bị này (currentDeviceId) tạo
                     if (r.deviceId !== currentDeviceId) return false;
                 } else if (currentAdminRole === 'WORKSHOP_ADMIN' && currentAdminWorkshop) {
-                    // Admin phân xưởng: Chỉ xem phiếu thuộc phân xưởng của mình
                     if ((r.workshop || 'Phân Xưởng Cắt') !== currentAdminWorkshop) return false;
                 } else if (currentAdminRole === 'SUPER_ADMIN') {
-                    // Admin tổng: Lọc theo dropdown nếu có chọn
                     const filterWs = document.getElementById('history-workshop-filter')?.value || "ALL";
                     if (filterWs !== "ALL" && (r.workshop || 'Phân Xưởng Cắt') !== filterWs) return false;
                 }
 
-                // 2. Lọc theo khoảng ngày
                 let matchDate = true;
                 if (fromDate && toDate) matchDate = r.date >= fromDate && r.date <= toDate;
                 else if (fromDate) matchDate = r.date >= fromDate;
@@ -2129,7 +2104,6 @@
             const inputPass = document.getElementById('admin-pass-input').value.trim();
             if (!inputPass) return;
 
-            // 1. Kiểm tra Admin Tổng
             if (inputPass === 'vietanh0910' || inputPass === 'vietanh910') {
                 isAdminAuthenticated = true;
                 currentAdminRole = 'SUPER_ADMIN';
@@ -2141,7 +2115,6 @@
                 return;
             }
 
-            // 2. Kiểm tra Admin Phân Xưởng
             const matchedWorkshop = workshops.find(w => {
                 const pass = (w.pass || getAutoWorkshopPassword(w.name)).toLowerCase();
                 return pass === inputPass.toLowerCase();
@@ -2374,7 +2347,7 @@
             if (countBadge) countBadge.innerText = filteredList.length;
 
             if (filteredList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Không tìm thấy mã SAP nào phù hợp</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400 italic">Không tìm thấy mã SAP nào phù hợp</td></tr>`;
                 return;
             }
 
@@ -2417,6 +2390,8 @@
         }
 
         function openAddMaterialModal() {
+            editingMaterialSAP = null;
+            document.querySelector('#add-material-modal h3').innerText = 'Thêm Mã SAP';
             document.getElementById('modal-sap-input').value = '';
             document.getElementById('modal-name-input').value = '';
             document.getElementById('modal-desc-input').value = '';
@@ -2455,31 +2430,49 @@
                     return;
                 }
 
-                if (masterMaterials.some(m => m.sapCode.toString().trim() === sap)) {
-                    showToast("Mã SAP này đã tồn tại!", "error");
-                    return;
+                let aliases = [name];
+                if (aliasesRaw) {
+                    aliases = aliases.concat(aliasesRaw.split(',').map(s => s.trim()).filter(Boolean));
                 }
 
                 if (editingMaterialSAP) {
-                    const idx = masterMaterials.findIndex(m => m.sapCode.toString().trim() === editingMaterialSAP);
+                    const isDuplicate = masterMaterials.some(m => 
+                        m.sapCode.toString().trim() === sap && 
+                        m.sapCode.toString().trim() !== editingMaterialSAP.toString().trim()
+                    );
+
+                    if (isDuplicate) {
+                        showToast("Mã SAP này đã được dùng cho vật tư khác!", "error");
+                        return;
+                    }
+
+                    const idx = masterMaterials.findIndex(m => m.sapCode.toString().trim() === editingMaterialSAP.toString().trim());
                     if (idx !== -1) {
-                        let aliases = [name];
-                        if (aliasesRaw) aliases = aliases.concat(aliasesRaw.split(',').map(s => s.trim()).filter(Boolean));
-                        masterMaterials[idx] = {...masterMaterials[idx], sapCode: sap, workshop: ws, name, description: desc, category: cat, aliases};
+                        masterMaterials[idx] = {
+                            ...masterMaterials[idx],
+                            sapCode: sap,
+                            workshop: ws,
+                            name: name,
+                            description: desc,
+                            category: cat,
+                            aliases: aliases
+                        };
+
                         saveStorage('app_materials', masterMaterials);
                         syncToFirebase('materials', masterMaterials);
+
                         editingMaterialSAP = null;
                         closeAddMaterialModal();
                         renderAdminMaterialsTable();
                         updateWorkshopScopedUI();
-                        showToast('Đã cập nhật mã SAP ' + sap + '!');
+                        showToast(`Đã cập nhật mã SAP ${sap}!`);
                         return;
                     }
                 }
 
-                let aliases = [name];
-                if (aliasesRaw) {
-                    aliases = aliases.concat(aliasesRaw.split(',').map(s => s.trim()).filter(Boolean));
+                if (masterMaterials.some(m => m.sapCode.toString().trim() === sap)) {
+                    showToast("Mã SAP này đã tồn tại!", "error");
+                    return;
                 }
 
                 masterMaterials.unshift({ 
@@ -2503,7 +2496,6 @@
             }
         }
 
-        // HÀM XÓA MÃ SAP HOÀN CHỈNH VÀ ĐỒNG BỘ CHÍNH XÁC
         function deleteMaterialMaster(sapCode) {
             const targetCode = (sapCode || '').toString().trim();
             const mat = masterMaterials.find(m => m.sapCode.toString().trim() === targetCode);
@@ -2640,19 +2632,27 @@
         function showToast(msg, type = "success") {
             const toast = document.getElementById('toast');
             const toastMsg = document.getElementById('toast-msg');
+            const toastIcon = document.getElementById('toast-icon');
             if (!toast || !toastMsg) return;
 
             toastMsg.innerText = msg;
             
-            const bgClass = type === 'error' ? 'bg-red-900 border border-red-700' : 'bg-slate-900';
+            const isError = type === 'error';
+            const bgClass = isError ? 'bg-red-600 border border-red-500' : 'bg-slate-900 border border-slate-700';
+            
+            if (toastIcon) {
+                toastIcon.setAttribute('data-lucide', isError ? 'alert-circle' : 'check-circle-2');
+                toastIcon.className = `w-4 h-4 shrink-0 ${isError ? 'text-white' : 'text-emerald-400'}`;
+                lucide.createIcons();
+            }
+
             toast.className = `fixed top-3 left-1/2 -translate-x-1/2 ${bgClass} text-white px-3.5 py-2 rounded-xl shadow-2xl transition-all duration-300 transform translate-y-0 opacity-100 flex items-center space-x-2 z-50 text-xs font-semibold max-w-[92vw]`;
 
             if (toastTimeout) clearTimeout(toastTimeout);
             toastTimeout = setTimeout(() => {
                 toast.className = `fixed top-3 left-1/2 -translate-x-1/2 ${bgClass} text-white px-3.5 py-2 rounded-xl shadow-2xl transition-all duration-300 transform -translate-y-20 opacity-0 pointer-events-none flex items-center space-x-2 z-50 text-xs font-semibold max-w-[92vw]`;
-            }, 1200);
+            }, 1500);
         }
     </script>
 </body>
 </html>
-
