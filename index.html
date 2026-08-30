@@ -796,7 +796,7 @@
             { name: "Máy Cắt 4", workshop: "Phân Xưởng Cắt" }
         ];
 
-        // 29 Mã Master Data Gốc Của Phân Xưởng Cắt
+        // Dữ liệu mẫu ban đầu (chỉ nạp khi cơ sở dữ liệu hoàn toàn trống)
         const defaultMaterials = [
             // NẸP LỚN
             { sapCode: "400009293", workshop: "Phân Xưởng Cắt", description: "TR-NL-50-GMM-TRA-0-XK", name: "Nẹp lớn ghép màng mờ", category: "NẸP LỚN", aliases: ["NL GHÉP MÀNG MỜ", "NL GMM TRA", "NL MỜ", "NEP LON GHEP MANG MO"] },
@@ -861,17 +861,18 @@
         let rawMachines = loadStorageArray('app_machines', defaultMachines);
         let machines = rawMachines.map(m => typeof m === 'string' ? { name: m, workshop: "Phân Xưởng Cắt" } : { name: m.name, workshop: m.workshop || "Phân Xưởng Cắt" });
 
-        let rawMaterials = loadStorageArray('app_materials', defaultMaterials);
-        let masterMaterials = rawMaterials.map(m => {
-            if (!m.workshop) m.workshop = "Phân Xưởng Cắt";
-            return m;
-        });
-
-        defaultMaterials.forEach(dm => {
-            if (!masterMaterials.some(m => m.sapCode === dm.sapCode)) {
-                masterMaterials.push(dm);
-            }
-        });
+        // Khởi tạo Master Data an toàn: Không tự động chèn lại mã đã bị người dùng xóa
+        let rawMaterials = loadStorageArray('app_materials', null);
+        let masterMaterials = [];
+        if (rawMaterials === null) {
+            masterMaterials = defaultMaterials.map(m => ({ ...m }));
+            saveStorage('app_materials', masterMaterials);
+        } else {
+            masterMaterials = rawMaterials.map(m => {
+                if (!m.workshop) m.workshop = "Phân Xưởng Cắt";
+                return m;
+            });
+        }
 
         let rawHistory = loadStorageArray('app_history', []);
         let historyRecords = rawHistory.map(r => {
@@ -1103,20 +1104,13 @@
                 }
             }, () => {});
 
+            // ĐỒNG BỘ MÃ SAP TỪ FIREBASE - ĐÃ XÓA VÒNG LẶP AUTO-RESTORE
             db.collection("settings").doc("materials").onSnapshot((doc) => {
                 if (doc.exists && doc.data() && Array.isArray(doc.data().list)) {
-                    const cloudList = doc.data().list.map(m => {
+                    masterMaterials = doc.data().list.map(m => {
                         if (!m.workshop) m.workshop = "Phân Xưởng Cắt";
                         return m;
                     });
-                    
-                    defaultMaterials.forEach(dm => {
-                        if (!cloudList.some(m => m.sapCode === dm.sapCode)) {
-                            cloudList.push(dm);
-                        }
-                    });
-
-                    masterMaterials = cloudList;
                     saveStorage('app_materials', masterMaterials);
                 } else if (!doc.exists) {
                     db.collection("settings").doc("materials").set({ list: masterMaterials }).catch(() => {});
@@ -2436,7 +2430,7 @@
                     return;
                 }
 
-                if (masterMaterials.some(m => m.sapCode === sap)) {
+                if (masterMaterials.some(m => m.sapCode.toString().trim() === sap)) {
                     showToast("Mã SAP này đã tồn tại!", "error");
                     return;
                 }
@@ -2467,8 +2461,10 @@
             }
         }
 
+        // HÀM XÓA MÃ SAP HOÀN CHỈNH VÀ ĐỒNG BỘ CHÍNH XÁC
         function deleteMaterialMaster(sapCode) {
-            const mat = masterMaterials.find(m => m.sapCode === sapCode);
+            const targetCode = (sapCode || '').toString().trim();
+            const mat = masterMaterials.find(m => m.sapCode.toString().trim() === targetCode);
             if (!mat) return;
 
             if (currentAdminRole === 'WORKSHOP_ADMIN' && mat.workshop !== currentAdminWorkshop) {
@@ -2476,14 +2472,14 @@
                 return;
             }
 
-            if (confirm(`Xác nhận xóa mã SAP [${sapCode}]?`)) {
-                masterMaterials = masterMaterials.filter(m => m.sapCode !== sapCode);
+            if (confirm(`Xác nhận xóa mã SAP [${targetCode}] - "${mat.name}"?`)) {
+                masterMaterials = masterMaterials.filter(m => m.sapCode.toString().trim() !== targetCode);
                 saveStorage('app_materials', masterMaterials);
                 syncToFirebase("materials", masterMaterials);
 
                 renderAdminMaterialsTable();
                 updateWorkshopScopedUI();
-                showToast(`Đã xóa mã SAP [${sapCode}]!`);
+                showToast(`Đã xóa vĩnh viễn mã SAP [${targetCode}]!`);
             }
         }
 
@@ -2554,7 +2550,7 @@
                                 aliasList = aliasList.concat(aliasesRaw.split(',').map(s => s.trim()).filter(Boolean));
                             }
 
-                            const existingIdx = masterMaterials.findIndex(m => m.sapCode === sap);
+                            const existingIdx = masterMaterials.findIndex(m => m.sapCode.toString().trim() === sap);
                             if (existingIdx !== -1) {
                                 masterMaterials[existingIdx].name = name;
                                 masterMaterials[existingIdx].workshop = ws;
