@@ -730,6 +730,16 @@
         let html5QrCodeScanner = null;
         let audioCtx = null;
 
+        // FIX LỖI RESET: Khai báo bộ cờ theo dõi trạng thái tải dữ liệu từ Cloud.
+        // Điều này ngăn chặn việc thiết bị lưu dữ liệu Local chưa đầy đủ lên Cloud
+        // khi mạng chậm hoặc thiết bị mới khởi động.
+        let cloudDataStatus = {
+            workshops: false,
+            categories: false,
+            machines: false,
+            materials: false
+        };
+
         try {
             if (!firebase.apps.length) {
                 firebase.initializeApp(firebaseConfig);
@@ -1057,10 +1067,13 @@
             }
         }
 
+        // FIX LỖI RESET: Thay đổi hàm cấu hình lắng nghe Firebase
         function setupCloudFirebaseListeners() {
             updateSyncStatus(true, "Firebase Realtime (kiemke-6602e)");
 
+            // Lắng nghe Phân Xưởng
             db.collection("settings").doc("workshops").onSnapshot((doc) => {
+                cloudDataStatus.workshops = true; // Đánh dấu đã nhận dữ liệu
                 if (doc.exists && doc.data() && Array.isArray(doc.data().list)) {
                     workshops = doc.data().list.map(w => typeof w === 'string' ? { name: w, pass: getAutoWorkshopPassword(w) } : w);
                     saveStorage('app_workshops', workshops);
@@ -1068,9 +1081,14 @@
                 } else if (!doc.exists) {
                     db.collection("settings").doc("workshops").set({ list: workshops }).catch(() => {});
                 }
-            }, () => {});
+            }, (error) => {
+                console.error("Lỗi tải workshops:", error);
+                cloudDataStatus.workshops = true;
+            });
 
+            // Lắng nghe Danh Mục
             db.collection("settings").doc("categories").onSnapshot((doc) => {
+                cloudDataStatus.categories = true; // Đánh dấu đã nhận dữ liệu
                 if (doc.exists && doc.data() && Array.isArray(doc.data().list)) {
                     categories = doc.data().list.map(c => typeof c === 'string' ? { name: c, workshop: "Phân Xưởng Cắt" } : { name: c.name, workshop: c.workshop || "Phân Xưởng Cắt" });
                     saveStorage('app_categories', categories);
@@ -1078,9 +1096,14 @@
                 } else if (!doc.exists) {
                     db.collection("settings").doc("categories").set({ list: categories }).catch(() => {});
                 }
-            }, () => {});
+            }, (error) => {
+                console.error("Lỗi tải categories:", error);
+                cloudDataStatus.categories = true;
+            });
 
+            // Lắng nghe Máy
             db.collection("settings").doc("machines").onSnapshot((doc) => {
+                cloudDataStatus.machines = true; // Đánh dấu đã nhận dữ liệu
                 if (doc.exists && doc.data() && Array.isArray(doc.data().list)) {
                     machines = doc.data().list.map(m => typeof m === 'string' ? { name: m, workshop: "Phân Xưởng Cắt" } : { name: m.name, workshop: m.workshop || "Phân Xưởng Cắt" });
                     saveStorage('app_machines', machines);
@@ -1088,9 +1111,14 @@
                 } else if (!doc.exists) {
                     db.collection("settings").doc("machines").set({ list: machines }).catch(() => {});
                 }
-            }, () => {});
+            }, (error) => {
+                console.error("Lỗi tải machines:", error);
+                cloudDataStatus.machines = true;
+            });
 
+            // Lắng nghe Mã SAP Vật Tư
             db.collection("settings").doc("materials").onSnapshot((doc) => {
+                cloudDataStatus.materials = true; // Đánh dấu đã nhận dữ liệu
                 if (doc.exists && doc.data() && Array.isArray(doc.data().list)) {
                     masterMaterials = doc.data().list.map(m => {
                         if (!m.workshop) m.workshop = "Phân Xưởng Cắt";
@@ -1102,10 +1130,13 @@
                 }
                 updateWorkshopScopedUI();
                 if (isAdminAuthenticated) renderAdminMaterialsTable();
-            }, () => { 
+            }, (error) => { 
+                console.error("Lỗi tải materials:", error);
+                cloudDataStatus.materials = true;
                 updateWorkshopScopedUI();
             });
 
+            // Lắng nghe Lịch Sử Phiếu
             db.collection("inventory_sheets").onSnapshot((snapshot) => {
                 let docs = [];
                 snapshot.forEach(doc => {
@@ -1129,10 +1160,21 @@
             }, () => {});
         }
 
+        // FIX LỖI RESET & IM LẶNG: Chỉnh sửa hàm đẩy dữ liệu
         function syncToFirebase(docName, dataPayload) {
             if (isFirebaseConnected && db) {
+                // Ngăn chặn ghi đè nếu dữ liệu ban đầu từ Cloud chưa được tải xuống
+                if (!cloudDataStatus[docName]) {
+                    showToast(`Hệ thống đang tải dữ liệu ${docName} từ Cloud, vui lòng đợi!`, "error");
+                    return;
+                }
                 if (!Array.isArray(dataPayload)) return;
-                db.collection("settings").doc(docName).set({ list: dataPayload }).catch(() => {});
+                
+                // Thêm catch để bắt lỗi nếu dữ liệu > 1MB (Giới hạn của Firestore Document)
+                db.collection("settings").doc(docName).set({ list: dataPayload }).catch((err) => {
+                    console.error(`Lỗi Firebase khi lưu ${docName}:`, err);
+                    showToast(`Lỗi đồng bộ lên Cloud! Dữ liệu ${docName} có thể đã vượt quá 1MB.`, "error");
+                });
             }
         }
 
@@ -2656,3 +2698,4 @@
     </script>
 </body>
 </html>
+final
