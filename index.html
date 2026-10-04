@@ -1427,6 +1427,8 @@
                 renderMachineDropdowns();
                 renderAdminMaterialsTable();
             }
+            // MỚI THÊM: tự động cuộn lên trên cùng trang để dễ thấy phiếu vừa thêm
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function removeDiacritics(str) {
